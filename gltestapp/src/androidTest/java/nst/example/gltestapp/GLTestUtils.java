@@ -9,13 +9,16 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
- * Created by mnistor on 2016-05-06.
+ * Created by mirceanis on 2016-05-06.
+ * <p/>
+ * A utility class that provides a way to enqueue runnables on a GLThread during an instrumentation test
  */
 public class GLTestUtils {
 
     private static GLTestUtils mInstance;
     private GL10 mGL;
 
+    @SuppressWarnings("unused")
     protected GLTestUtils() {
         //quick, quick, hide!!
     }
@@ -44,7 +47,7 @@ public class GLTestUtils {
         });
 
         // Wait for the renderer to get the GL context.
-        synchronized(mGlReadyLock) {
+        synchronized (mGlReadyLock) {
             while (mGL == null) {
                 mGlReadyLock.wait();
             }
@@ -107,19 +110,22 @@ public class GLTestUtils {
      * Dummy renderer, exposes the GL context
      */
     private static final Object mGlReadyLock = new Object();
+
     private class DummyRenderer implements GLSurfaceView.Renderer {
 
         @Override
         public void onDrawFrame(GL10 gl) {
 
         }
+
         @Override
         public void onSurfaceChanged(GL10 gl, int width, int height) {
 
         }
+
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            synchronized(mGlReadyLock) {
+            synchronized (mGlReadyLock) {
                 mGL = gl;
                 mGlReadyLock.notifyAll();
             }
