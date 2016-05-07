@@ -10,8 +10,9 @@ import javax.microedition.khronos.opengles.GL10;
 
 /**
  * Created by mirceanis on 2016-05-06.
- * <p/>
+ * <p>
  * A utility class that provides a way to enqueue runnables on a GLThread during an instrumentation test
+ * </p>
  */
 public class GLTestUtils {
 
@@ -68,6 +69,9 @@ public class GLTestUtils {
      * You gotta start somewhere.
      * This method is best called in your test setup
      * It's gonna be heavy so don't forget to {@link #release()}!
+     * @param activity an activity that will have its content replaced with a GLSurfaceView
+     *                 This activity will leak unless you call {@link #release()} after your tests are done
+     * @throws Exception if an error occurs
      */
     public static synchronized void initialize(Activity activity) throws Exception {
         mInstance = new GLTestUtils(activity);
@@ -80,6 +84,11 @@ public class GLTestUtils {
         mInstance = null;
     }
 
+    /**
+     * Posts your {@code payload} on a GLThread and blocks until it's finished running
+     * @param payload the Runnable to run
+     * @throws Exception if initialized() hasn't been called
+     */
     public static void runOnGLThreadAndWait(Runnable payload) throws Exception {
 
         if (mInstance == null) {
