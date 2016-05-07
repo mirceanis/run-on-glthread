@@ -1,6 +1,7 @@
 package nst.example.gltestapp;
 
 import android.opengl.GLES20;
+import android.support.test.filters.Suppress;
 import android.support.test.rule.ActivityTestRule;
 
 import org.junit.After;
@@ -8,6 +9,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import nst.example.gltestutils.GLTestUtils;
 
 /**
  * Created by mirceanis on 2016-05-06.
@@ -46,6 +49,9 @@ public class MainActivityTest {
         Assert.assertTrue(true);
     }
 
+    // this test fails and brings down the whole test suite.
+    // unsuppress if you need to see how it fails
+    @Suppress
     @Test
     public void testSomethingFailingOnGLThread() throws Exception {
         GLTestUtils.runOnGLThreadAndWait(new Runnable() {
@@ -57,12 +63,18 @@ public class MainActivityTest {
         Assert.assertTrue(true);
     }
 
+    // this test fails and brings down the whole test suite.
+    // unsuppress if you need to see how it fails
+    @Suppress
     @Test
     public void testShaderCompilationOnTestThread() throws Exception {
         int vertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
         Assert.assertTrue("shader handle is non zero", vertexShaderHandle != 0);
     }
 
+    // this test fails and brings down the whole test suite.
+    // unsuppress if you need to see how it fails
+    @Suppress
     @Test
     public void testShaderCompilationOnUIThread() throws Exception {
 
@@ -91,7 +103,7 @@ public class MainActivityTest {
     }
 
     @Test
-    public void testShaderCompilationOnGLThread() throws Exception {
+    public void testShaderCreationOnGLThread() throws Exception {
         GLTestUtils.runOnGLThreadAndWait(new Runnable() {
             @Override
             public void run() {

@@ -1,4 +1,4 @@
-package nst.example.gltestapp;
+package nst.example.gltestutils;
 
 import android.app.Activity;
 import android.opengl.GLSurfaceView;

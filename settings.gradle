@@ -1,1 +1,1 @@
-include ':gltestapp', ':glTestUtils'
+include ':demo-app', ':glTestUtils'
