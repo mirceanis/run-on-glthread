@@ -31,5 +31,6 @@ proguard/
 # Android Studio captures folder
 captures/
 
-#Android studio cache
+#Android studio stuff
 .idea/
+*.iml
