@@ -40,10 +40,6 @@ android {
             }
         }
 
-        artifacts {
-            archives sourcesJarTask
-        }
-
         task("generate${variant.name.capitalize()}Javadoc", type: Javadoc) {
             description "Generates Javadoc for $variant.name."
             source = variant.javaCompiler.source
@@ -62,6 +58,7 @@ android {
         }
 
         artifacts {
+            archives sourcesJarTask
             archives javadocJarTask
         }
     }
