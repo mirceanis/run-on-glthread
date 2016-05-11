@@ -2,6 +2,21 @@ import com.android.build.gradle.api.LibraryVariant;
 apply plugin: 'com.android.library'
 
 project.setVersion("0.1")
+group = 'ro.mirceanistor'
+
+ext {
+    publishedGroupId = group
+    libraryName = 'run-on-glthread'
+    artifact = 'run-on-glthread'
+
+    libraryDescription = 'Minimize boilerplate needed for running OpenGL code in android tests'
+
+    siteUrl = 'https://github.com/mirceanis/run-on-glthread'
+    gitUrl = 'https://github.com/mirceanis/run-on-glthread.git'
+
+    libraryVersion = project.version
+
+}
 
 android {
     compileSdkVersion 23
@@ -74,8 +89,8 @@ apply plugin: 'maven'
 uploadArchives {
     repositories.mavenDeployer {
 
-        pom.groupId = 'nst.test.glutils'
-        pom.artifactId = project.name
+        pom.groupId = "$publishedGroupId"
+        pom.artifactId = "$libraryName"
         pom.version = project.version
 
         repository(url: uri("$buildDir/publish"))
