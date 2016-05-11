@@ -1,1 +1,1 @@
-include ':demo-app', ':glTestUtils'
+include ':demo-app', ':run-on-glthread'
