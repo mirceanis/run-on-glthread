@@ -6,26 +6,16 @@ an attempt to minimize the boilerplate needed to run OpenGL commands in an andro
 ```groovy
 dependencies {
     ...
-    androidTestCompile 'ro.mirceanistor:run-on-glthread:0.1'
+    androidTestCompile 'ro.mirceanistor:run-on-glthread:0.2'
 }
 ```
 
 # usage
 
 The library provides a `GLTestUtils` class that has a `runOnGLThreadAndWait(Runnable)` method
-It needs to be initialized with a blank activity and released after tests finish:
+It needs to be `release`d after the tests are done to avoid leaks
 
 ```java
-
-    @Rule
-    public ActivityTestRule mActivityRule = new ActivityTestRule<>(SomeBlankActivity.class);
-
-    @Before
-    public void setUp() throws Exception {
-
-        GLTestUtils.initialize(mActivityRule.getActivity());
-
-    }
     
     @Test
     public void testShaderCreationOnGLThread() throws Exception {
@@ -36,7 +26,6 @@ It needs to be initialized with a blank activity and released after tests finish
                 Assert.assertTrue("shader handle is non zero", vertexShaderHandle != 0);
             }
         });
-        Assert.assertTrue(true);
     }
 
     @After
@@ -47,11 +36,6 @@ It needs to be initialized with a blank activity and released after tests finish
     }
     
 ```
-
-# limitations
-
-The activity passed at `initialize()` gets clobbered, having its content view replaced with a mock `GLSurfaceView`
-This will probably be addressed in a future release.
 
 # contributing
 
