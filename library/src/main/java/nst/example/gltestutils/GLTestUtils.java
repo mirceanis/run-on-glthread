@@ -35,7 +35,7 @@ public class GLTestUtils {
             @Override
             public void run() {
                 mGLSurfaceView = new GLSurfaceView(testContext);
-                mGLSurfaceView.setId(R.id.my_gl_surface_view);
+                mGLSurfaceView.setId(R.id.z_gl_surface_view_id_used_for_testing);
                 mGLSurfaceView.setEGLContextClientVersion(2);
 
                 // Attach the renderer to the view
