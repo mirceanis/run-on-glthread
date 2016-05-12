@@ -17,6 +17,7 @@ import javax.microedition.khronos.opengles.GL10;
  * A utility class that provides a way to enqueue runnables on a GLThread during an instrumentation test
  * </p>
  */
+@SuppressWarnings("unused")
 public class GLTestUtils {
 
     private static GLTestUtils mInstance;
@@ -28,6 +29,8 @@ public class GLTestUtils {
     private GLSurfaceView mGLSurfaceView;
     private Context testContext = InstrumentationRegistry.getContext();
     private Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+    private int mWidth = 0;
+    private int mHeight = 0;
 
     protected GLTestUtils() throws Exception {
 
@@ -43,7 +46,8 @@ public class GLTestUtils {
                 mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
                 WindowManager wm = (WindowManager) testContext.getSystemService(Context.WINDOW_SERVICE);
-                wm.addView(mGLSurfaceView, new WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_TOAST,0));
+                WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_TOAST,0);
+                wm.addView(mGLSurfaceView, layoutParams);
             }
         });
 
@@ -75,6 +79,22 @@ public class GLTestUtils {
         }
 
         mInstance.doRunOnGLThread(payload);
+    }
+
+    /**
+     * Gets the width of the underlying GLSurfaceView
+     * @return the width in pixels
+     */
+    public static int getWidth() {
+        return mInstance.mWidth;
+    }
+
+    /**
+     * Gets the height of the underlying GLSurfaceView
+     * @return the height in pixels
+     */
+    public static int getHeight() {
+        return mInstance.mHeight;
     }
 
     private void doRunOnGLThread(final Runnable payload) throws InterruptedException {
@@ -117,15 +137,17 @@ public class GLTestUtils {
 
         @Override
         public void onSurfaceChanged(GL10 gl, int width, int height) {
-
+            synchronized (mGlReadyLock) {
+                mGL = gl;
+                mWidth = width;
+                mHeight = height;
+                mGlReadyLock.notifyAll();
+            }
         }
 
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            synchronized (mGlReadyLock) {
-                mGL = gl;
-                mGlReadyLock.notifyAll();
-            }
+
         }
     }
 
