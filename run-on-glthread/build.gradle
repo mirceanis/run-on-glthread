@@ -1,22 +1,5 @@
-import com.android.build.gradle.api.LibraryVariant;
 apply plugin: 'com.android.library'
-
-project.setVersion("0.1")
-group = 'ro.mirceanistor'
-
-ext {
-    publishedGroupId = group
-    libraryName = 'run-on-glthread'
-    artifact = 'run-on-glthread'
-
-    libraryDescription = 'Minimize boilerplate needed for running OpenGL code in android tests'
-
-    siteUrl = 'https://github.com/mirceanis/run-on-glthread'
-    gitUrl = 'https://github.com/mirceanis/run-on-glthread.git'
-
-    libraryVersion = project.version
-
-}
+apply from: 'maven-push.gradle'
 
 android {
     compileSdkVersion 23
@@ -34,66 +17,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
-    libraryVariants.all { LibraryVariant variant ->
-
-        if (variant.name.contains("debug")) {
-            return;
-        }
-
-        //generate sources jar and mark it as an artifact.
-        def sourcesJarTask = task("generate${variant.name.capitalize()}SourcesJar", type: Jar) {
-            classifier = 'sources'
-            from variant.sourceSets.collect { set ->
-                Collection<File> directories = new HashSet<File>();
-                directories.addAll(set.javaDirectories)
-                directories.addAll(set.cppDirectories)
-                directories.addAll(set.manifestFile)
-                directories.addAll(set.shadersDirectories)
-                directories.addAll(set.resourcesDirectories)
-                return directories
-            }
-        }
-
-        task("generate${variant.name.capitalize()}Javadoc", type: Javadoc) {
-            description "Generates Javadoc for $variant.name."
-            source = variant.javaCompiler.source
-            def androidJar = "${project.android.sdkDirectory}/platforms/${project.android.compileSdkVersion}/android.jar"
-            classpath = files(variant.javaCompiler.classpath.files) + files(androidJar)
-            options.links("http://docs.oracle.com/javase/7/docs/api/");
-            options.linksOffline("http://d.android.com/reference", "${project.android.sdkDirectory}/docs/reference");
-            exclude '**/BuildConfig.java'
-            exclude '**/R.java'
-        }
-
-        def javadocJarTask = task("generate${variant.name.capitalize()}JavadocsJar", type: Jar, dependsOn: "generate${variant.name.capitalize()}Javadoc") {
-            classifier = 'javadoc'
-            Javadoc generatorTask = (Javadoc)tasks.findByName("generate${variant.name.capitalize()}Javadoc")
-            from generatorTask.destinationDir
-        }
-
-        artifacts {
-            archives sourcesJarTask
-            archives javadocJarTask
-        }
-    }
-
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-}
-
-apply plugin: 'maven'
-
-uploadArchives {
-    repositories.mavenDeployer {
-
-        pom.groupId = "$publishedGroupId"
-        pom.artifactId = "$libraryName"
-        pom.version = project.version
-
-        repository(url: uri("$buildDir/publish"))
-
-    }
 }
