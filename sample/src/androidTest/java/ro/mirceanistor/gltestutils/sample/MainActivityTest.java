@@ -55,6 +55,31 @@ public class MainActivityTest {
         Assert.assertTrue("something should be true", something[0]);
     }
 
+    /**
+     * An example of test running GL code on a GL thread
+     * @throws Exception
+     */
+    @Test
+    public void testShaderCreationOnGLThread() throws Exception {
+        GLTestUtils.runOnGLThreadAndWait(new Runnable() {
+            @Override
+            public void run() {
+                int vertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
+                Assert.assertTrue("shader handle is non zero", vertexShaderHandle != 0);
+            }
+        });
+    }
+
+    /**
+     * GLTestUtils needs to be released
+     * @throws Exception
+     */
+    @After
+    public void tearDown() throws Exception {
+        //There must be a release, otherwise it will leak
+        GLTestUtils.release();
+    }
+
     // this test fails and brings down the whole test suite.
     // unsuppress if you need to see how it fails
     @Suppress
@@ -99,20 +124,5 @@ public class MainActivityTest {
 
     }
 
-    @Test
-    public void testShaderCreationOnGLThread() throws Exception {
-        GLTestUtils.runOnGLThreadAndWait(new Runnable() {
-            @Override
-            public void run() {
-                int vertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
-                Assert.assertTrue("shader handle is non zero", vertexShaderHandle != 0);
-            }
-        });
-    }
 
-    @After
-    public void tearDown() throws Exception {
-        //There must be a release, otherwise it will leak
-        GLTestUtils.release();
-    }
 }
