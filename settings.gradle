@@ -1,1 +1,1 @@
-include ':demo-app', ':run-on-glthread'
+include ':sample', ':library'
