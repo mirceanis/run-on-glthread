@@ -56,19 +56,9 @@ public class GLTestUtils {
     }
 
     /**
-     * You gotta start somewhere.
-     * This method is best called in your test setup
-     * It's gonna be heavy so don't forget to {@link #release()}!
-     * @throws Exception if an error occurs
-     */
-    public static synchronized void initialize() throws Exception {
-        mInstance = new GLTestUtils();
-    }
-
-    /**
      * Tell android that you're not into GLThreading any more so allow this to be cleaned up.
      */
-    public static synchronized void release() {
+    public static void release() {
         mInstance.detachView();
         mInstance = null;
     }

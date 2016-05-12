@@ -10,7 +10,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.concurrent.CountDownLatch;
+
 import nst.example.gltestutils.GLTestUtils;
+
+import static junit.framework.TestCase.assertTrue;
 
 /**
  * Created by mirceanis on 2016-05-06.
@@ -24,8 +28,6 @@ public class MainActivityTest {
     @Before
     public void setUp() throws Exception {
 
-        GLTestUtils.initialize(/*mActivityRule.getActivity()*/);
-
     }
 
     @Test
@@ -33,20 +35,23 @@ public class MainActivityTest {
         GLTestUtils.runOnGLThreadAndWait(new Runnable() {
             @Override
             public void run() {
-                Assert.assertTrue(true);
+                assertTrue(true);
             }
         });
     }
 
     @Test
     public void testSomethingAfterGLThread() throws Exception {
+        final boolean[] something = {false};
+
         GLTestUtils.runOnGLThreadAndWait(new Runnable() {
             @Override
             public void run() {
-                Assert.assertTrue(true);
+                something[0] = true;
             }
         });
-        Assert.assertTrue(true);
+
+        Assert.assertTrue("something should be true", something[0]);
     }
 
     // this test fails and brings down the whole test suite.
@@ -57,10 +62,10 @@ public class MainActivityTest {
         GLTestUtils.runOnGLThreadAndWait(new Runnable() {
             @Override
             public void run() {
-                Assert.assertTrue("I failed on the GL thread", false);
+                assertTrue("I failed on the GL thread", false);
             }
         });
-        Assert.assertTrue(true);
+        assertTrue(true);
     }
 
     // this test fails and brings down the whole test suite.
@@ -69,7 +74,7 @@ public class MainActivityTest {
     @Test
     public void testShaderCompilationOnTestThread() throws Exception {
         int vertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
-        Assert.assertTrue("shader handle is non zero", vertexShaderHandle != 0);
+        assertTrue("shader handle is non zero", vertexShaderHandle != 0);
     }
 
     // this test fails and brings down the whole test suite.
@@ -77,28 +82,19 @@ public class MainActivityTest {
     @Suppress
     @Test
     public void testShaderCompilationOnUIThread() throws Exception {
-
-        final Object lock = new Object();
-        final boolean[] done = {false};
+        final CountDownLatch latch = new CountDownLatch(1);
 
         mActivityRule.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 int vertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
                 Assert.assertTrue("shader handle is non zero", vertexShaderHandle != 0);
-                done[0] = true;
-                lock.notifyAll();
+                latch.countDown();
             }
         });
 
         // Wait for the ui thread task to finish
-
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized(lock) {
-            while (!done[0]) {
-                lock.wait();
-            }
-        }
+        latch.await();
 
     }
 
@@ -111,13 +107,11 @@ public class MainActivityTest {
                 Assert.assertTrue("shader handle is non zero", vertexShaderHandle != 0);
             }
         });
-        Assert.assertTrue(true);
     }
 
     @After
     public void tearDown() throws Exception {
-
+        //There must be a release, otherwise it will leak
         GLTestUtils.release();
-
     }
 }
