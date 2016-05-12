@@ -1,7 +1,10 @@
 package nst.example.gltestutils;
 
-import android.app.Activity;
+import android.app.Instrumentation;
+import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.support.test.InstrumentationRegistry;
+import android.view.WindowManager;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -19,31 +22,28 @@ public class GLTestUtils {
     private static GLTestUtils mInstance;
     private GL10 mGL;
 
-    @SuppressWarnings("unused")
-    protected GLTestUtils() {
-        //quick, quick, hide!!
-    }
+    /**
+     * Essentially this is used to enqueue events on it's associated GLThread
+     */
+    private GLSurfaceView mGLSurfaceView;
+    private Context testContext = InstrumentationRegistry.getContext();
+    private Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
 
-    protected GLTestUtils(Activity activity) throws Exception {
+    protected GLTestUtils() throws Exception {
 
-        mActivity = activity;
-        activity.runOnUiThread(new Runnable() {
+        instrumentation.runOnMainSync(new Runnable() {
+            @Override
             public void run() {
-                // New or different activity, set up for GL.
-                mGLSurfaceView = (GLSurfaceView) mActivity.findViewById(R.id.my_gl_surface_view);
-                if (mGLSurfaceView == null) {
-                    mGLSurfaceView = new GLSurfaceView(mActivity);
-                    mGLSurfaceView.setId(R.id.my_gl_surface_view);
-                }
+                mGLSurfaceView = new GLSurfaceView(testContext);
+                mGLSurfaceView.setId(R.id.my_gl_surface_view);
                 mGLSurfaceView.setEGLContextClientVersion(2);
 
                 // Attach the renderer to the view
                 mGLSurfaceView.setRenderer(new DummyRenderer());
                 mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
-                //and the view to the activity.
-                //TODO: find a way to not destroy the content.. it may not be our activity
-                mActivity.setContentView(mGLSurfaceView);
+                WindowManager wm = (WindowManager) testContext.getSystemService(Context.WINDOW_SERVICE);
+                wm.addView(mGLSurfaceView, new WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_TOAST,0));
             }
         });
 
@@ -56,31 +56,20 @@ public class GLTestUtils {
     }
 
     /**
-     * Essentially this is used to enqueue events on it's associated GLThread
-     */
-    private GLSurfaceView mGLSurfaceView;
-
-    /**
-     * An activity is used to contain the GLSurfaceView.
-     */
-    private Activity mActivity;
-
-    /**
      * You gotta start somewhere.
      * This method is best called in your test setup
      * It's gonna be heavy so don't forget to {@link #release()}!
-     * @param activity an activity that will have its content replaced with a GLSurfaceView
-     *                 This activity will leak unless you call {@link #release()} after your tests are done
      * @throws Exception if an error occurs
      */
-    public static synchronized void initialize(Activity activity) throws Exception {
-        mInstance = new GLTestUtils(activity);
+    public static synchronized void initialize() throws Exception {
+        mInstance = new GLTestUtils();
     }
 
     /**
      * Tell android that you're not into GLThreading any more so allow this to be cleaned up.
      */
     public static synchronized void release() {
+        mInstance.detachView();
         mInstance = null;
     }
 
@@ -92,7 +81,7 @@ public class GLTestUtils {
     public static void runOnGLThreadAndWait(Runnable payload) throws Exception {
 
         if (mInstance == null) {
-            throw new RuntimeException("have you called initialize() in your test setup() method?");
+            mInstance = new GLTestUtils();
         }
 
         mInstance.doRunOnGLThread(payload);
@@ -109,6 +98,15 @@ public class GLTestUtils {
         latch.await();  // wait for the payload to finish
     }
 
+    private void detachView() {
+        instrumentation.runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                WindowManager wm = (WindowManager) testContext.getSystemService(Context.WINDOW_SERVICE);
+                wm.removeView(mGLSurfaceView);
+            }
+        });
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // dummy renderer

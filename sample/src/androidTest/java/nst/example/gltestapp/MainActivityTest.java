@@ -24,7 +24,7 @@ public class MainActivityTest {
     @Before
     public void setUp() throws Exception {
 
-        GLTestUtils.initialize(mActivityRule.getActivity());
+        GLTestUtils.initialize(/*mActivityRule.getActivity()*/);
 
     }
 
