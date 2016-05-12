@@ -1,4 +1,4 @@
-package nst.example.gltestapp;
+package ro.mirceanistor.gltestutils.sample;
 
 import android.opengl.GLES20;
 import android.support.test.filters.Suppress;
@@ -12,7 +12,8 @@ import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 
-import nst.example.gltestutils.GLTestUtils;
+import ro.mirceanistor.gltestutils.GLTestUtils;
+import ro.mirceanistor.gltestutils.sample.MainActivity;
 
 import static junit.framework.TestCase.assertTrue;
 

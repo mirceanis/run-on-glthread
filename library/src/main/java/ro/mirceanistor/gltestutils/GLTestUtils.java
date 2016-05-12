@@ -1,4 +1,4 @@
-package nst.example.gltestutils;
+package ro.mirceanistor.gltestutils;
 
 import android.app.Instrumentation;
 import android.content.Context;
