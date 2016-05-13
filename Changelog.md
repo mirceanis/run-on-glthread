@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* v0.3 - add `getWidth()` and `getHeight()`
+
 * v0.2 - no more activity
     * `GLTestUtils` no longer needs an `Activity` in `initialize()`, in fact that method is now private
         the dummy `GLSurfaceView` used is now attached directly to the `WindowManager`
