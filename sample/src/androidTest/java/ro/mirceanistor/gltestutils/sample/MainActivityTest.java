@@ -3,17 +3,18 @@ package ro.mirceanistor.gltestutils.sample;
 import android.opengl.GLES20;
 import android.support.test.filters.Suppress;
 import android.support.test.rule.ActivityTestRule;
+import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.concurrent.CountDownLatch;
 
 import ro.mirceanistor.gltestutils.GLTestUtils;
-import ro.mirceanistor.gltestutils.sample.MainActivity;
 
 import static junit.framework.TestCase.assertTrue;
 
@@ -21,6 +22,7 @@ import static junit.framework.TestCase.assertTrue;
  * Created by mirceanis on 2016-05-06.
  * Example of usage of the GLTestUtils class
  */
+@RunWith(AndroidJUnit4.class)
 public class MainActivityTest {
 
     @Rule
@@ -68,6 +70,23 @@ public class MainActivityTest {
                 Assert.assertTrue("shader handle is non zero", vertexShaderHandle != 0);
             }
         });
+    }
+
+    /**
+     * An example of test that uses width and height in a useless manner
+     * @throws Exception
+     */
+    @Test
+    public void testHasNonZeroDimensions() throws Exception {
+        GLTestUtils.runOnGLThreadAndWait(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertTrue("width is supposed to be non zero", GLTestUtils.getWidth() != 0);
+            }
+        });
+
+        //should also work outside of the GL context
+        Assert.assertTrue("height is supposed to be non zero", GLTestUtils.getHeight() != 0);
     }
 
     /**
