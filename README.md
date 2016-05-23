@@ -6,7 +6,7 @@ an attempt to minimize the boilerplate needed to run OpenGL commands in an andro
 ```groovy
 dependencies {
     ...
-    androidTestCompile 'ro.mirceanistor:run-on-glthread:0.3'
+    androidTestCompile 'ro.mirceanistor:run-on-glthread:0.4'
 }
 ```
 

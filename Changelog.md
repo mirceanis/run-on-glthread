@@ -1,6 +1,10 @@
 Changelog
 =========
 
+* v0.4 - init and exceptions
+    * `getWidth()` and `getHeight()` also perform initialization if they are the first calls to `GLTestUtils`
+    * `Exception`s thrown during the execution of the payload `Runnable` are captured and thrown on the calling thread
+
 * v0.3 - add `getWidth()` and `getHeight()`
 
 * v0.2 - no more activity
