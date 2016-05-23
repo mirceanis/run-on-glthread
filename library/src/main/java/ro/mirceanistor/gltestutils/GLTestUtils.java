@@ -3,6 +3,7 @@ package ro.mirceanistor.gltestutils;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.view.WindowManager;
 
@@ -17,7 +18,7 @@ import javax.microedition.khronos.opengles.GL10;
  * A utility class that provides a way to enqueue runnables on a GLThread during an instrumentation test
  * </p>
  */
-@SuppressWarnings("unused")
+
 public class GLTestUtils {
 
     private static GLTestUtils mInstance;
@@ -32,7 +33,7 @@ public class GLTestUtils {
     private int mWidth = 0;
     private int mHeight = 0;
 
-    protected GLTestUtils() throws Exception {
+    protected GLTestUtils() throws RuntimeException {
 
         instrumentation.runOnMainSync(new Runnable() {
             @Override
@@ -46,7 +47,7 @@ public class GLTestUtils {
                 mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
                 WindowManager wm = (WindowManager) testContext.getSystemService(Context.WINDOW_SERVICE);
-                WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_TOAST,0);
+                WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_TOAST, 0);
                 wm.addView(mGLSurfaceView, layoutParams);
             }
         });
@@ -54,7 +55,11 @@ public class GLTestUtils {
         // Wait for the renderer to get the GL context.
         synchronized (mGlReadyLock) {
             while (mGL == null) {
-                mGlReadyLock.wait();
+                try {
+                    mGlReadyLock.wait();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
@@ -63,16 +68,20 @@ public class GLTestUtils {
      * Tell android that you're not into GLThreading any more so allow this to be cleaned up.
      */
     public static void release() {
-        mInstance.detachView();
-        mInstance = null;
+        if (mInstance != null) {
+            mInstance.detachView();
+            mInstance = null;
+        }
     }
 
     /**
      * Posts your {@code payload} on a GLThread and blocks until it's finished running
-     * @param payload the Runnable to run
-     * @throws Exception if initialized() hasn't been called
+     * In case this is the first call to GLTestUtils, it also initializes the underlying mechanics
+     *
+     * @param payload the Runnable to run. May be {@code null}
+     * @throws Exception captured while running your payload
      */
-    public static void runOnGLThreadAndWait(Runnable payload) throws Exception {
+    public static void runOnGLThreadAndWait(@Nullable Runnable payload) throws Exception {
 
         if (mInstance == null) {
             mInstance = new GLTestUtils();
@@ -83,29 +92,55 @@ public class GLTestUtils {
 
     /**
      * Gets the width of the underlying GLSurfaceView
+     * In case this is the first call to GLTestUtils, it also initializes the underlying mechanics
+     *
      * @return the width in pixels
+     * @throws RuntimeException when wrong happens during init
      */
-    public static int getWidth() {
+    public static int getWidth() throws RuntimeException {
+        if (mInstance == null) {
+            mInstance = new GLTestUtils();
+        }
         return mInstance.mWidth;
     }
 
     /**
      * Gets the height of the underlying GLSurfaceView
+     * In case this is the first call to GLTestUtils, it also initializes the underlying mechanics
+     *
      * @return the height in pixels
+     * @throws RuntimeException when wrong happens during init
      */
-    public static int getHeight() {
+    public static int getHeight() throws RuntimeException {
+        if (mInstance == null) {
+            mInstance = new GLTestUtils();
+        }
         return mInstance.mHeight;
     }
 
-    private void doRunOnGLThread(final Runnable payload) throws InterruptedException {
+    private void doRunOnGLThread(@Nullable final Runnable payload) throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
+        final Exception[] problems = {null};
         mGLSurfaceView.queueEvent(new Runnable() {
             public void run() {
-                payload.run();
+                if (payload != null) {
+                    try {
+                        payload.run();
+                    } catch (Exception ex) {
+                        //collect exceptions from the GLThread
+                        problems[0] = ex;
+                    }
+                }
                 latch.countDown();
             }
         });
+
         latch.await();  // wait for the payload to finish
+
+        //throw any exception that occurred on the GLThread
+        if (problems[0] != null) {
+            throw problems[0];
+        }
     }
 
     private void detachView() {
